@@ -71,14 +71,33 @@ export async function createUser(user: {
 }
 
 export async function getProducts(): Promise<GetProductsResponse> {
-  await connect()
+  await connect();
+  const productsProjection = { __v: false };
+  const products = await Products.find({}, productsProjection);
+  return { products };
+}
 
-  const productsProjection = {
-    __v: false
-  }
-  const products = await Products.find({}, productsProjection)
+export interface GetProductResponse extends Product {
+  _id: Types.ObjectId;
+}
 
-  return {
-    products,
-  }
+export async function getProduct(productId: Types.ObjectId | string): Promise<GetProductResponse | null> {
+  await connect();
+  if (!Types.ObjectId.isValid(productId)) return null;
+  const product = await Products.findById(productId);
+  return product;
+}
+
+export interface CartResponse {
+  cartItems: {
+    product: Product & { _id: Types.ObjectId };
+    qty: number;
+  }[];
+}
+
+export async function getUserCart(userId: string): Promise<CartResponse | null> {
+  await connect();
+  const user = await Users.findById(userId).populate('cartItems.product');
+  if (!user) return null;
+  return { cartItems: user.cartItems };
 }

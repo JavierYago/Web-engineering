@@ -1,5 +1,6 @@
 import Products, { Product } from '@/models/Product';
 import Users, { User } from '@/models/User';
+import Orders from '@/models/Order';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
@@ -8,29 +9,30 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 const products: Product[] = [
   {
-    name: 'Earthen Bottle',
-    price: 39.95,
-    img: 'https://tailwindui.com/img/ecommerce-images/category-page-04-image-card-01.jpg',
-    description: 'What a bottle!',
+    name: 'Leche Entera',
+    price: 1.20,
+    img: 'https://ejemplo.com/img/leche.jpg',
+    description: 'Leche fresca de vaca, 1L',
+    category: 'Lácteos',
+    brand: 'Central Lechera',
   },
   {
-    name: 'Nomad Tumbler',
-    price: 39.95,
-    img: 'https://tailwindui.com/img/ecommerce-images/category-page-04-image-card-02.jpg',
-    description: 'Yet another item',
+    name: 'Pan de Molde',
+    price: 1.50,
+    img: 'https://ejemplo.com/img/pan.jpg',
+    description: 'Pan de molde blanco, 500g',
+    category: 'Panadería',
+    brand: 'Bimbo',
   },
+  // Añade más productos típicos de supermercado
 ];
 
 async function seed() {
   if (!MONGODB_URI) {
-    throw new Error(
-      'Please define the MONGODB_URI environment variable inside .env.local'
-    );
+    throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
   }
 
-  const opts = {
-    bufferCommands: false,
-  };
+  const opts = { bufferCommands: false };
   const conn = await mongoose.connect(MONGODB_URI, opts);
 
   if (conn.connection.db) {
@@ -39,41 +41,26 @@ async function seed() {
     throw new Error('Database connection is undefined.');
   }
 
+  await Products.createCollection();
+  await Users.createCollection();
+  await Orders.createCollection();
+
   const insertedProducts = await Products.insertMany(products);
   const user: User = {
-    email: 'johndoe@example.com',
+    email: 'cliente@supermercado.com',
     password: '1234',
-    name: 'John',
-    surname: 'Doe',
-    address: '123 Main St, 12345 New York, United States',
-    birthdate: new Date('1970-01-01'),
+    name: 'Cliente',
+    surname: 'Ejemplo',
+    address: 'Calle Mayor 1, 28001 Madrid, España',
+    birthdate: new Date('1990-01-01'),
     cartItems: [
-      {
-        product: insertedProducts[0]._id,
-        qty: 2,
-      },
-      {
-        product: insertedProducts[1]._id,
-        qty: 5,
-      },
+      { product: insertedProducts[0]._id, qty: 2 },
+      { product: insertedProducts[1]._id, qty: 1 },
     ],
     orders: [],
   };
   const res = await Users.create(user);
   console.log(JSON.stringify(res, null, 2));
-
-  const userProjection = {
-    name: true,
-    surname: true,
-  };
-  const productProjection = {
-    name: true,
-    price: true,
-  };
-  const retrievedUser = await Users
-    .findOne({ email: 'johndoe@example.com' }, userProjection)
-    .populate('cartItems.product', productProjection);
-  console.log(JSON.stringify(retrievedUser, null, 2));
 
   await conn.disconnect();
 }

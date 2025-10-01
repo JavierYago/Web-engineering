@@ -2,10 +2,12 @@ import Products, { Product } from '@/models/Product';
 import connect from '@/lib/mongoose';
 import { Types } from 'mongoose';
 import Users, {User, CartItem} from '@/models/User';
+import Orders, {Order} from '@/models/Order';
 
 export interface GetProductsResponse {
   products: (Product & { _id: Types.ObjectId })[]
 }
+
 
 export interface ErrorResponse {
   error: string

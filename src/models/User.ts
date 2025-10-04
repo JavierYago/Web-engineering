@@ -1,7 +1,8 @@
 import mongoose, { Schema, Types } from 'mongoose';
+import { Product } from './Product';
 
   export interface CartItem {
-    product: Types.ObjectId;
+    product: Types.ObjectId | (Product & { _id: Types.ObjectId });
     qty: number;
   }
   

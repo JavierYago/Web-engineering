@@ -99,5 +99,29 @@ export async function getUserCart(userId: string): Promise<CartResponse | null> 
   await connect();
   const user = await Users.findById(userId).populate('cartItems.product');
   if (!user) return null;
-  return { cartItems: user.cartItems };
+
+  // Define el tipo local para el mapeo
+  type CartItemPopulated = {
+    product: Types.ObjectId | (Product & { _id: Types.ObjectId });
+    qty: number;
+  };
+
+  // Usa el tipo en el mapeo
+  const cartItems = user.cartItems.map((item: CartItemPopulated) => {
+    if (item.product && typeof item.product === 'object' && 'name' in item.product) {
+      // Producto poblado
+      return {
+        product: item.product as Product & { _id: Types.ObjectId },
+        qty: item.qty,
+      };
+    } else {
+      // Producto no poblado (debería ser raro)
+      return {
+        product: {} as Product & { _id: Types.ObjectId },
+        qty: item.qty,
+      };
+    }
+  });
+
+  return { cartItems };
 }

@@ -1,8 +1,7 @@
 import Products, { Product } from '@/models/Product';
 import connect from '@/lib/mongoose';
 import { Types } from 'mongoose';
-import Users, {User, CartItem} from '@/models/User';
-import Orders, {Order} from '@/models/Order';
+import Users, { User } from '@/models/User';
 
 export interface GetProductsResponse {
   products: (Product & { _id: Types.ObjectId })[]
@@ -95,33 +94,78 @@ export interface CartResponse {
   }[];
 }
 
+export async function updateCartItem(
+  userId: string,
+  productId: string,
+  qty: number
+): Promise<{ cartItems: CartResponse['cartItems']; created: boolean } | null> {
+  await connect();
+
+  if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(productId) || qty < 1) {
+    return null;
+  }
+
+  const user = await Users.findById(userId);
+  if (!user) return null;
+
+  const productExists = await Products.exists({ _id: productId });
+  if (!productExists) return null;
+
+  let created = false;
+  type CartItemPopulated = {
+    product: Types.ObjectId | (Product & { _id: Types.ObjectId });
+    qty: number;
+  };
+  const isPopulated = (
+    p: CartItemPopulated['product']
+  ): p is Product & { _id: Types.ObjectId } => {
+    return typeof p === 'object' && !(p instanceof Types.ObjectId) && '_id' in p;
+  };
+
+  const existingItem = (user.cartItems as CartItemPopulated[]).find((item) => {
+    const id = isPopulated(item.product)
+      ? item.product._id.toString()
+      : (item.product as Types.ObjectId).toString();
+    return id === productId;
+  });
+
+  if (existingItem) {
+    existingItem.qty = qty;
+  } else {
+    user.cartItems.push({product: new Types.ObjectId(productId), qty});
+    created = true;
+  }
+
+  await user.save();
+
+  const populatedUser = await Users.findById(userId).populate('cartItems.product');
+  const cartItems = (populatedUser?.cartItems || []).map((item: CartItemPopulated) => ({
+    product: item.product as Product & { _id: Types.ObjectId },
+    qty: item.qty,
+  }));
+
+  return { cartItems, created };
+}
+
 export async function getUserCart(userId: string): Promise<CartResponse | null> {
   await connect();
+
+  if (!Types.ObjectId.isValid(userId)) return null;
+
   const user = await Users.findById(userId).populate('cartItems.product');
   if (!user) return null;
 
-  // Define el tipo local para el mapeo
   type CartItemPopulated = {
     product: Types.ObjectId | (Product & { _id: Types.ObjectId });
     qty: number;
   };
 
-  // Usa el tipo en el mapeo
-  const cartItems = user.cartItems.map((item: CartItemPopulated) => {
-    if (item.product && typeof item.product === 'object' && 'name' in item.product) {
-      // Producto poblado
-      return {
-        product: item.product as Product & { _id: Types.ObjectId },
-        qty: item.qty,
-      };
-    } else {
-      // Producto no poblado (debería ser raro)
-      return {
-        product: {} as Product & { _id: Types.ObjectId },
-        qty: item.qty,
-      };
-    }
-  });
+  const cartItems: CartResponse['cartItems'] = (user.cartItems as CartItemPopulated[]).map(
+    (item) => ({
+      product: item.product as Product & { _id: Types.ObjectId },
+      qty: item.qty,
+    })
+  );
 
   return { cartItems };
 }

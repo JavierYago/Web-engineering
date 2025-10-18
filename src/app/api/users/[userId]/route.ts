@@ -5,24 +5,24 @@ import { updateCartItem, CartResponse, ErrorResponse } from '@/lib/handlers';
 export async function PUT(
   request: NextRequest,
   { params }: { params: { userId: string; productId: string } }
-): Promise<
-  NextResponse<{ cartItems: CartResponse['cartItems'] }> | NextResponse<ErrorResponse>
-> {
+): Promise<NextResponse<{ cartItems: CartResponse['cartItems'] }> | NextResponse<ErrorResponse>> {
+  const { userId, productId } = params;
+
   // Validación de params
-  if (!Types.ObjectId.isValid(params.userId) || !Types.ObjectId.isValid(params.productId)) {
+  if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(productId)) {
     return NextResponse.json(
       { error: 'WRONG_PARAMS', message: 'Invalid user ID or product ID.' },
       { status: 400 }
     );
   }
 
-  // Validación del body
-  let body: any;
+  // Leer body JSON
+  let body: { qty?: unknown };
   try {
-    body = await request.json();
+    body = (await request.json()) as { qty?: unknown };
   } catch {
     return NextResponse.json(
-      { error: 'WRONG_PARAMS', message: 'Invalid JSON body.' },
+      { error: 'WRONG_PARAMS', message: 'Body must be JSON with qty.' },
       { status: 400 }
     );
   }
@@ -35,8 +35,7 @@ export async function PUT(
     );
   }
 
-  // Lógica
-  const result = await updateCartItem(params.userId, params.productId, qty);
+  const result = await updateCartItem(userId, productId, qty);
   if (!result) {
     return NextResponse.json(
       { error: 'NOT_FOUND', message: 'User or product not found.' },
@@ -44,10 +43,9 @@ export async function PUT(
     );
   }
 
-  // Respuesta 201 si se creó, 200 si se actualizó
   if (result.created) {
     const headers = new Headers();
-    headers.append('Location', `/api/users/${params.userId}/cart/${params.productId}`);
+    headers.append('Location', `/api/users/${userId}/cart/${productId}`);
     return NextResponse.json({ cartItems: result.cartItems }, { status: 201, headers });
   }
 

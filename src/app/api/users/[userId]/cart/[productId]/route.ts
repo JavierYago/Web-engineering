@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Types } from 'mongoose';
-import { ErrorResponse, updateCartItem, CartResponse } from '@/lib/handlers';
+import { ErrorResponse, updateCartItem, deleteCartItem, CartResponse } from '@/lib/handlers';
 
 export async function PUT(
   request: NextRequest,
@@ -54,4 +54,30 @@ export async function PUT(
     { cartItems: result.cartItems },
     { status: result.created ? 201 : 200, headers }
   );
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { userId: string; productId: string } }
+): Promise<NextResponse<CartResponse> | NextResponse<ErrorResponse>> {
+  const { userId, productId } = params;
+
+  // Validación de params
+  if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(productId)) {
+    return NextResponse.json(
+      { error: 'WRONG_PARAMS', message: 'Invalid user ID or product ID.' },
+      { status: 400 }
+    );
+  }
+
+  const result = await deleteCartItem(userId, productId);
+  if (!result) {
+    return NextResponse.json(
+      { error: 'NOT_FOUND', message: 'User not found or product not found.' },
+      { status: 404 }
+    );
+  }
+
+  // Siempre 200, aunque el producto no estuviera en el carrito
+  return NextResponse.json({ cartItems: result.cartItems }, { status: 200 });
 }

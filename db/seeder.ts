@@ -47,10 +47,10 @@ async function seed() {
 
   const insertedProducts = await Products.insertMany(products);
   const user: User = {
-    email: 'cliente@supermercado.com',
+    email: 'client@supermarket.com',
     password: '1234',
-    name: 'Cliente',
-    surname: 'Ejemplo',
+    name: 'Client',
+    surname: 'Example',
     address: 'Calle Mayor 1, 28001 Madrid, España',
     birthdate: new Date('1990-01-01'),
     cartItems: [

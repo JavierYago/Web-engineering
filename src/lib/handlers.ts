@@ -3,6 +3,7 @@ import connect from '@/lib/mongoose';
 import { Types } from 'mongoose';
 import Users, { User } from '@/models/User';
 import OrdersModel, { Order, ProductSnapshot } from '@/models/Order';
+import bcrypt from 'bcrypt';
 
 export interface GetProductsResponse {
   products: (Product & { _id: Types.ObjectId })[]
@@ -56,8 +57,12 @@ export async function createUser(user: {
     return null;
   }
 
+  const hashedPassword = await bcrypt.hash(user.password, 10);
+
+  const hash = await bcrypt.hash(user.password, 10)
   const doc: User = {
     ...user,
+    password: hash,
     birthdate: new Date(user.birthdate),
     cartItems: [],
     orders: [],
@@ -369,4 +374,26 @@ export async function getUserOrder(
   if (!order) return null;
 
   return order as GetOrderResponse;
+}
+
+//Seminar 2
+
+export interface CheckCredentialsResponse {
+  _id: Types.ObjectId
+}
+
+export async function checkCredentials(
+  email: string,
+  password: string
+): Promise<CheckCredentialsResponse | null> {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const user = await Users.findOne({ email: normalizedEmail }).select('+password');
+  if (!user) return null;
+
+  // Implement this...
+  const match = await bcrypt.compare(password, user.password)
+  if (!match) return null;
+
+  return { _id: user._id as Types.ObjectId }
 }

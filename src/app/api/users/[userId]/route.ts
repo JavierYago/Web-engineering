@@ -1,53 +1,53 @@
 import { Types } from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
-import { updateCartItem, CartResponse, ErrorResponse } from '@/lib/handlers';
+import { getUser, GetUserResponse, ErrorResponse } from '@/lib/handlers';
+import {getSession} from "@/lib/auth";
 
-export async function PUT(
+
+
+export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string; productId: string } }
-): Promise<NextResponse<{ cartItems: CartResponse['cartItems'] }> | NextResponse<ErrorResponse>> {
-  const { userId, productId } = params;
-
-  // Validación de params
-  if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(productId)) {
+  {
+    params,
+  }: {
+    params: { userId: string }
+  }
+): Promise<NextResponse<GetUserResponse> | NextResponse<ErrorResponse>> {
+  const session = await getSession()
+  if (!session?.userId){
+    return NextResponse.json({
+      error: 'NOT_AUTHENTICATED',
+      message: 'Authentication required.'
+    }, {status: 401})
+  }
+  if (!Types.ObjectId.isValid(params.userId)) {
     return NextResponse.json(
-      { error: 'WRONG_PARAMS', message: 'Invalid user ID or product ID.' },
+      {
+        error: 'WRONG_PARAMS',
+        message: 'Invalid user ID.',
+      },
       { status: 400 }
-    );
+    )
   }
 
-  // Leer body JSON
-  let body: { qty?: unknown };
-  try {
-    body = (await request.json()) as { qty?: unknown };
-  } catch {
-    return NextResponse.json(
-      { error: 'WRONG_PARAMS', message: 'Body must be JSON with qty.' },
-      { status: 400 }
-    );
+  if (session.userId.toString() !== params.userId){
+    return NextResponse.json({
+      error: 'NOT_AUTHORIZED',
+      message: 'Unauthorized access.',
+    }, { status: 403 })
   }
 
-  const qty = Number(body?.qty);
-  if (!Number.isFinite(qty) || qty < 1) {
-    return NextResponse.json(
-      { error: 'WRONG_PARAMS', message: 'qty must be a number >= 1.' },
-      { status: 400 }
-    );
-  }
+  const user = await getUser(params.userId)
 
-  const result = await updateCartItem(userId, productId, qty);
-  if (!result) {
+  if (user === null) {
     return NextResponse.json(
-      { error: 'NOT_FOUND', message: 'User or product not found.' },
+      {
+        error: 'NOT_FOUND',
+        message: 'User not found.',
+      },
       { status: 404 }
-    );
+    )
   }
 
-  if (result.created) {
-    const headers = new Headers();
-    headers.append('Location', `/api/users/${userId}/cart/${productId}`);
-    return NextResponse.json({ cartItems: result.cartItems }, { status: 201, headers });
-  }
-
-  return NextResponse.json({ cartItems: result.cartItems }, { status: 200 });
+  return NextResponse.json(user)
 }

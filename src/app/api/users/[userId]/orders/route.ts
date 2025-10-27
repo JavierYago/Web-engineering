@@ -3,11 +3,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ErrorResponse } from '@/lib/handlers';
 import { getUserOrders, GetOrdersResponse } from '@/lib/handlers';
 import { createOrderFromCart } from '@/lib/handlers';
+import {getSession} from '@/lib/auth';
 
 export async function GET(
 	request: NextRequest,
 	{ params }: { params: { userId: string } }
 ): Promise<NextResponse<GetOrdersResponse> | NextResponse<ErrorResponse>> {
+	const session = await getSession();
+  if (!session?.userId) {
+  return NextResponse.json(
+    {
+      error: 'NOT_AUTHENTICATED',
+      message: 'Authentication required.',
+    },
+    { status: 401 }
+  )
+}
 	const { userId } = params;
 
 	if (!Types.ObjectId.isValid(userId)) {
@@ -16,6 +27,15 @@ export async function GET(
 			{ status: 400 }
 		);
 	}
+	if (session.userId.toString() !== params.userId) {
+  return NextResponse.json(
+    {
+      error: 'NOT_AUTHORIZED',
+      message: 'Unauthorized access.',
+    },
+    { status: 403 }
+  )
+}
 
 	const result = await getUserOrders(userId);
 	if (!result) {
@@ -32,6 +52,16 @@ export async function GET(
 		request: NextRequest,
 		{ params }: { params: { userId: string } }
 	): Promise<NextResponse<{ _id: string }> | NextResponse<ErrorResponse>> {
+		const session = await getSession();
+  if (!session?.userId) {
+  return NextResponse.json(
+    {
+      error: 'NOT_AUTHENTICATED',
+      message: 'Authentication required.',
+    },
+    { status: 401 }
+  )
+}
 		const { userId } = params;
 
 		if (!Types.ObjectId.isValid(userId)) {
@@ -56,6 +86,16 @@ export async function GET(
 			cardHolder: body.cardHolder || '',
 			cardNumber: body.cardNumber || '',
 		});
+
+		if (session.userId.toString() !== params.userId) {
+			return NextResponse.json(
+				{
+					error: 'NOT_AUTHORIZED',
+					message: 'Unauthorized access.',
+				},
+				{ status: 403 }
+			);
+		}
 
 		if (!result.ok) {
 			if (result.reason === 'not-found') {

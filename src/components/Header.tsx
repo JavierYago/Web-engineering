@@ -1,12 +1,12 @@
 export default function Header() {
   return (
-    <header className='mx-auto w-full bg-gray-800 px-6 pb-16 pt-24 text-center sm:pb-20 sm:pt-28 lg:px-8 lg:pb-24 lg:pt-32'>
+    <header className='w-full bg-secondary px-6 pb-10 pt-24 text-center sm:pb-12 sm:pt-28 lg:px-8'>
       <div className='mx-auto max-w-2xl'>
-        <h1 className='text-6xl font-bold text-gray-100 sm:text-7xl lg:text-8xl'>
-          GameShop
+        <h1 className='text-4xl font-extrabold tracking-tight text-primary sm:text-6xl'>
+          Frescura Diaria
         </h1>
-        <p className='mt-4 text-sm leading-8 text-gray-400 sm:mt-6 sm:text-base lg:text-lg'>
-          The e-shop created by players for players
+        <p className='mt-4 text-lg leading-8 text-gray-600'>
+          Los mejores productos del campo a tu mesa en 24 horas.
         </p>
       </div>
     </header>

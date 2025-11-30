@@ -90,6 +90,9 @@ export async function getProduct(productId: Types.ObjectId | string): Promise<Ge
   await connect();
   if (!Types.ObjectId.isValid(productId)) return null;
   const product = await Products.findById(productId);
+  if (product) {
+    console.log(`Product found: ${JSON.stringify(product)}`);
+  }
   return product;
 }
 

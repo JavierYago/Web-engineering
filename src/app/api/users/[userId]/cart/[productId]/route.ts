@@ -21,7 +21,6 @@ const session = await getSession();
 
   const { userId, productId } = params;
 
-  // Validate path params
   if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(productId)) {
     return NextResponse.json(
       { error: 'WRONG_PARAMS', message: 'Invalid user ID or product ID.' },
@@ -29,7 +28,6 @@ const session = await getSession();
     );
   }
 
-  // Validate body
   let body: { qty?: number };
   try {
     body = await request.json();
@@ -61,7 +59,6 @@ const session = await getSession();
   const result = await updateCartItem(userId, productId, qty);
 
   if (!result) {
-    // Could be user not found or product not found
     return NextResponse.json(
       { error: 'NOT_FOUND', message: 'User not found or product not found.' },
       { status: 404 }
@@ -96,7 +93,6 @@ export async function DELETE(
 }
   const { userId, productId } = params;
 
-  // Validación de params
   if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(productId)) {
     return NextResponse.json(
       { error: 'WRONG_PARAMS', message: 'Invalid user ID or product ID.' },
@@ -122,6 +118,5 @@ export async function DELETE(
     );
   }
 
-  // Siempre 200, aunque el producto no estuviera en el carrito
   return NextResponse.json({ cartItems: result.cartItems }, { status: 200 });
 }

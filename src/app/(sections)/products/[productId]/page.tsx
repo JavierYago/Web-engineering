@@ -54,7 +54,7 @@ export default async function Product({
           <button
             type='button'
             className='flex items-center justify-center rounded-md border border-transparent bg-gray-800 px-8 py-3 text-base font-medium text-white hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2'
-            disabled // Desactivado porque no hay lógica JS todavía
+            disabled 
           >
             Add to cart
           </button>

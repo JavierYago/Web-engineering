@@ -7,7 +7,6 @@ export default function ThemeSwitcher() {
   const [isAccessible, setIsAccessible] = useState(false)
 
   useEffect(() => {
-    // Al montar, comprobar si ya estaba activo
     const savedMode = localStorage.getItem('daltonism-mode') === 'true'
     setIsAccessible(savedMode)
     if (savedMode) {

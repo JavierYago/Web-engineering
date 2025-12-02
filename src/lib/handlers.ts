@@ -194,7 +194,6 @@ const isPopulated = (
 ): Promise<CartResponse | null> {
   await connect();
 
-  // Validaciones mínimas (la ruta también valida y para 400)
   if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(productId)) {
     return null;
   }
@@ -205,7 +204,6 @@ const isPopulated = (
   const productExists = await Products.exists({ _id: productId });
   if (!productExists) return null;
 
-  // Filtra el carrito para quitar ese productId (soporta ObjectId o documento populateado)
   user.cartItems = (user.cartItems as CartItemPopulated[]).filter((item) => {
     const id = isPopulated(item.product)
       ? item.product._id.toString()
@@ -215,7 +213,6 @@ const isPopulated = (
 
   await user.save();
 
-  // Devuelve carrito populateado
   const populatedUser = await Users.findById(userId).populate('cartItems.product');
   const cartItems: CartResponse['cartItems'] = (populatedUser?.cartItems || []).map(
     (item: CartItemPopulated) => ({
@@ -227,7 +224,6 @@ const isPopulated = (
   return { cartItems };
 }
 
-// Orders
 export interface GetOrdersResponse {
   orders: Array<
     Pick<Order, 'address' | 'date' | 'cardHolder' | 'cardNumber' | 'orderItems'> & {
@@ -241,19 +237,16 @@ export async function getUserOrders(userId: string): Promise<GetOrdersResponse |
 
   if (!Types.ObjectId.isValid(userId)) return null;
 
-  // Recupera el usuario (solo ids de órdenes)
   const user = await Users.findById(userId).select('orders');
 
   if (!user) return null;
 
-  // Asegura una lista de ObjectIds (soporta si vinieran docs populateados accidentalmente)
   type OrderRef = Types.ObjectId | (Order & { _id: Types.ObjectId });
   const userOrders = (user.orders as unknown as OrderRef[]);
   const orderIds: Types.ObjectId[] = userOrders.map((o) =>
     o instanceof Types.ObjectId ? o : o._id
   );
 
-  // Busca las órdenes por id (sin populate de productos; ya son snapshots)
   if (orderIds.length === 0) {
     return { orders: [] };
   }
@@ -275,7 +268,6 @@ export async function getUserOrders(userId: string): Promise<GetOrdersResponse |
   return { orders };
 }
 
-// Crear orden a partir del carrito
 export interface CreateOrderInput {
   address: string;
   cardHolder: string;
@@ -292,7 +284,6 @@ export async function createOrderFromCart(
 ): Promise<CreateOrderFromCartResult> {
   await connect();
 
-  // Validaciones básicas
   if (!Types.ObjectId.isValid(userId)) {
     return { ok: false, reason: 'invalid' };
   }
@@ -305,18 +296,15 @@ export async function createOrderFromCart(
     return { ok: false, reason: 'invalid' };
   }
 
-  // Cargamos usuario con carrito populateado para poder crear snapshots
   const user = await Users.findById(userId).populate('cartItems.product');
   if (!user) {
     return { ok: false, reason: 'not-found' };
   }
 
-  // Si el carrito está vacío → 400
   if (!user.cartItems || user.cartItems.length === 0) {
     return { ok: false, reason: 'empty-cart' };
   }
 
-  // Construimos los OrderItems con snapshot de producto
   type CartItemPop = { product: Types.ObjectId | (Product & { _id: Types.ObjectId }); qty: number };
   const orderItems: Array<{ product: ProductSnapshot; qty: number }> = (user.cartItems as CartItemPop[]).map((item) => {
     const p = item.product as Product & { _id: Types.ObjectId };
@@ -331,16 +319,13 @@ export async function createOrderFromCart(
     return { product: snapshot, qty: item.qty };
   });
 
-  // Creamos la orden
   const orderDoc = await OrdersModel.create({
     address,
     cardHolder,
     cardNumber,
     orderItems,
-    // date se autocompleta por el schema (default: now)
   });
 
-  // Actualizamos usuario: añadimos la orden y vaciamos carrito
   user.orders.push(orderDoc._id as unknown as Types.ObjectId);
   user.cartItems = [];
   await user.save();
@@ -348,7 +333,6 @@ export async function createOrderFromCart(
   return { ok: true, orderId: orderDoc._id as Types.ObjectId };
 }
 
-// Obtener una orden concreta de un usuario
 export interface GetOrderResponse extends Order {
   _id: Types.ObjectId;
 }
@@ -363,7 +347,6 @@ export async function getUserOrder(
     return null;
   }
 
-  // Verifica que el usuario exista y que la orden pertenezca al usuario
   const user = await Users.findById(userId).select('orders');
   if (!user) return null;
 
@@ -372,14 +355,12 @@ export async function getUserOrder(
   );
   if (!belongs) return null;
 
-  // Recupera la orden
   const order = await OrdersModel.findById(orderId).lean<Order & { _id: Types.ObjectId }>();
   if (!order) return null;
 
   return order as GetOrderResponse;
 }
 
-//Seminar 2
 
 export interface CheckCredentialsResponse {
   _id: Types.ObjectId
@@ -394,7 +375,6 @@ export async function checkCredentials(
   const user = await Users.findOne({ email: normalizedEmail }).select('+password');
   if (!user) return null;
 
-  // Implement this...
   const match = await bcrypt.compare(password, user.password)
   if (!match) return null;
 

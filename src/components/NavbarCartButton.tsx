@@ -1,0 +1,37 @@
+import { ReactNode } from 'react'
+import Link from 'next/link'
+import { getSession } from '@/lib/auth'
+import { getUserCart } from '@/lib/handlers' // Nota: En tu proyecto es getUserCart
+import { navbarButtonClasses } from '@/components/NavbarButton'
+
+interface NavbarCartButtonProps {
+  children: ReactNode
+}
+
+export default async function NavbarCartButton({
+  children,
+}: NavbarCartButtonProps) {
+  const session = await getSession()
+  let totalQty = 0
+
+  if (session) {
+    const cartData = await getUserCart(session.userId)
+    if (cartData) {
+      totalQty = cartData.cartItems.reduce(
+        (acc, item) => acc + item.qty,
+        0
+      )
+    }
+  }
+
+  return (
+    <Link href='/cart' className={`relative ${navbarButtonClasses}`}>
+      {children}
+      {totalQty > 0 && (
+        <div className='absolute -right-1 -top-1 inline-flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-bold text-white'>
+          {totalQty}
+        </div>
+      )}
+    </Link>
+  )
+}

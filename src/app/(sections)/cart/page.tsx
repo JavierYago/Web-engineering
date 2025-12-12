@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getUserCart } from '@/lib/handlers'
 import Link from 'next/link'
 import { getSession } from '@/lib/auth'
+import CartItemCounter from '@/components/CartItemCounter'
 
 export default async function Cart() {
   const session = await getSession()
@@ -45,7 +46,9 @@ export default async function Cart() {
                     <div>
                       <div className='flex justify-between text-base font-medium text-gray-900'>
                         <h3>
-                          <Link href={`/products/${item.product._id.toString()}`}>
+                          <Link
+                            href={`/products/${item.product._id.toString()}`}
+                          >
                             {item.product.name}
                           </Link>
                         </h3>
@@ -56,8 +59,20 @@ export default async function Cart() {
                     </div>
                     <div className='flex flex-1 items-end justify-between text-sm'>
                       <p className='text-gray-500'>Qty {item.qty}</p>
+                      <div className='flex items-center'>
+                        <p className='mr-2 text-gray-500'>Qty</p>
+                        <CartItemCounter
+                          userId={session.userId}
+                          productId={item.product._id.toString()}
+                          value={item.qty}
+                        />
+                      </div>
+
                       <div className='flex'>
-                        <button type='button' className='font-medium text-indigo-600 hover:text-indigo-500' disabled>
+                        <button
+                          type='button'
+                          className='font-medium text-indigo-600 hover:text-indigo-500'
+                        >
                           Remove
                         </button>
                       </div>

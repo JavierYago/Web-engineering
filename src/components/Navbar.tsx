@@ -1,5 +1,4 @@
 import {
-  ArrowRightStartOnRectangleIcon,
   ShoppingCartIcon,
   UserIcon,
 } from '@heroicons/react/24/outline'
@@ -7,19 +6,20 @@ import NavbarButton from '@/components/NavbarButton'
 import Link from 'next/link'
 import { getSession } from '@/lib/auth'
 import ThemeSwitcher from '@/components/ThemeSwitcher'
-import NavbarCartButton from '@/components/NavbarCartButton'
+import NavbarCartButton from '@/components/NavbarCartButton' // Componente del Badge (Seminario 4)
+import NavbarSignOutButton from '@/components/NavbarSignOutButton' // Componente de Sign Out (Práctica 4)
 
 export default async function Navbar() {
   const session = await getSession()
 
   return (
-    <nav className='bg-primary fixed top-0 z-50 w-full shadow-md transition-colors duration-300'>
+    <nav className='fixed top-0 z-50 w-full bg-primary shadow-md transition-colors duration-300'>
       <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
         <div className='relative flex h-16 items-center justify-between'>
           {/* Logo y Nombre */}
           <div className='flex flex-1 items-center justify-start'>
             <Link
-              className='text-inverted flex flex-shrink-0 items-center space-x-2 hover:opacity-90'
+              className='flex flex-shrink-0 items-center space-x-2 text-inverted hover:opacity-90'
               href='/'
             >
               {/* Icono de supermercado */}
@@ -52,35 +52,32 @@ export default async function Navbar() {
 
             {session ? (
               <>
+                {/* Botón del carrito con Badge */}
                 <NavbarCartButton>
                   <span className='sr-only'>Cart</span>
                   <ShoppingCartIcon className='h-6 w-6' aria-hidden='true' />
                 </NavbarCartButton>
+
+                {/* Perfil de usuario */}
                 <NavbarButton href='/profile'>
                   <span className='sr-only'>User profile</span>
                   <UserIcon className='h-6 w-6' aria-hidden='true' />
                 </NavbarButton>
-                {/* Restaurado: Botón de Sign out original */}
-                <NavbarButton href='#'>
-                  <span className='sr-only'>Sign out</span>
-                  <ArrowRightStartOnRectangleIcon
-                    className='h-6 w-6'
-                    aria-hidden='true'
-                  />
-                </NavbarButton>
+
+                {/* Botón de Sign Out funcional */}
+                <NavbarSignOutButton />
               </>
             ) : (
               <>
-                {/* Restaurado: Enlaces de Sign up / Sign in originales */}
                 <Link
                   href='/auth/signup'
-                  className='text-inverted rounded-md px-3 py-2 text-sm font-medium hover:bg-black/10 hover:text-white'
+                  className='rounded-md px-3 py-2 text-sm font-medium text-inverted hover:bg-black/10 hover:text-white'
                 >
                   Sign up
                 </Link>
                 <Link
                   href='/auth/signin'
-                  className='text-inverted rounded-md px-3 py-2 text-sm font-medium hover:bg-black/10 hover:text-white'
+                  className='rounded-md px-3 py-2 text-sm font-medium text-inverted hover:bg-black/10 hover:text-white'
                 >
                   Sign in
                 </Link>

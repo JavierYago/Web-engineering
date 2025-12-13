@@ -1,43 +1,31 @@
-import { redirect } from 'next/navigation'
-import { getUserCart } from '@/lib/handlers'
-import { getSession } from '@/lib/auth'
-import CheckOutForm from '@/components/CheckOutForm'
+import SignUpForm from '@/components/SignUpForm'
+import Link from 'next/link'
 
-export default async function Checkout() {
-  const session = await getSession()
-  if (!session) redirect('/auth/signin')
-
-  const cartData = await getUserCart(session.userId)
-  if (!cartData || cartData.cartItems.length === 0) {
-    redirect('/cart')
-  }
-
-  const total = cartData.cartItems.reduce(
-    (acc, item) => acc + item.product.price * item.qty,
-    0
-  )
+export default function SignUp() {
+  // ¡IMPORTANTE! No añadas getSession() ni redirect() aquí.
+  // Esta página debe ser accesible para usuarios no autenticados.
 
   return (
-    <div className='mx-auto max-w-3xl'>
-      <h1 className='text-3xl font-bold text-gray-900 mb-8'>Checkout</h1>
-      
-      <div className='bg-gray-50 p-6 rounded-lg mb-8'>
-        <h2 className='text-lg font-medium text-gray-900 mb-4'>Resumen</h2>
-        <ul className='divide-y divide-gray-200'>
-          {cartData.cartItems.map((item) => (
-            <li key={item.product._id.toString()} className='flex justify-between py-2'>
-              <span className='text-gray-700'>{item.product.name} (x{item.qty})</span>
-              <span>{(item.product.price * item.qty).toFixed(2)} €</span>
-            </li>
-          ))}
-        </ul>
-        <div className='flex justify-between pt-4 border-t border-gray-200 mt-4 font-bold'>
-          <span>Total</span>
-          <span>{total.toFixed(2)} €</span>
-        </div>
+    <div className='flex w-full flex-col px-6 py-12'>
+      <div className='mx-auto w-full max-w-sm'>
+        <div className='mx-auto h-10 w-auto text-center text-4xl'>🛒</div>
+        <h2 className='mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900'>
+          Create a new account
+        </h2>
       </div>
 
-      <CheckOutForm userId={session.userId} total={total} />
+      <div className='mx-auto mt-10 w-full max-w-sm'>
+        <SignUpForm />
+        <p className='mt-10 text-center text-sm text-gray-500'>
+          Already a member?{' '}
+          <Link
+            href='/auth/signin'
+            className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500'
+          >
+            Sign in
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }

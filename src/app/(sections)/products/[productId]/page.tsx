@@ -1,6 +1,6 @@
 import { Types } from 'mongoose'
 import { notFound } from 'next/navigation'
-import { getProduct, getUserCart } from '@/lib/handlers' // Importamos getUserCart
+import { getProduct, getUserCart } from '@/lib/handlers'
 import { getSession } from '@/lib/auth'
 import CartItemCounter from '@/components/CartItemCounter'
 
@@ -20,7 +20,6 @@ export default async function Product({
     notFound()
   }
 
-  // Lógica para obtener la cantidad actual en el carrito
   let initialQty = 0
   if (session) {
     const cart = await getUserCart(session.userId)

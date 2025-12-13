@@ -14,7 +14,6 @@ export default function NavbarSignOutButton() {
       })
       if (res.ok) {
         router.refresh()
-        // Opcional: router.push('/') si quieres redirigir a home
       }
     } catch (error) {
       console.error('Error signing out', error)

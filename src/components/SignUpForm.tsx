@@ -43,7 +43,6 @@ export default function SignUpForm() {
 
       if (res.ok) {
         setError('')
-        // Redirigir al login tras registro exitoso
         router.push('/auth/signin')
       } else {
         const data = await res.json()

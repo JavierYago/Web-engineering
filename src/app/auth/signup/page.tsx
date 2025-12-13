@@ -2,8 +2,6 @@ import SignUpForm from '@/components/SignUpForm'
 import Link from 'next/link'
 
 export default function SignUp() {
-  // ¡IMPORTANTE! No añadas getSession() ni redirect() aquí.
-  // Esta página debe ser accesible para usuarios no autenticados.
 
   return (
     <div className='flex w-full flex-col px-6 py-12'>

@@ -10,7 +10,7 @@ interface CheckOutFormProps {
 
 export default function CheckOutForm({ userId, total }: CheckOutFormProps) {
   const router = useRouter()
-  const [isPending, startTransition] = useTransition() // Hook clave para sincronizar
+  const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string>('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [formValues, setFormValues] = useState({
@@ -40,8 +40,6 @@ export default function CheckOutForm({ userId, total }: CheckOutFormProps) {
       if (res.ok) {
         const data = await res.json()
         
-        // ENVUELTO EN TRANSITION: Esto asegura que el router.refresh() termine
-        // de actualizar el Navbar (badge a 0) ANTES de cambiar de página.
         startTransition(() => {
           router.refresh()
           router.push(`/orders/${data._id}`)
@@ -56,7 +54,6 @@ export default function CheckOutForm({ userId, total }: CheckOutFormProps) {
     }
   }
 
-  // Estado combinado: Procesando (API) o Pendiente (Transición de Next.js)
   const isLoading = isProcessing || isPending
 
   return (
@@ -95,7 +92,6 @@ export default function CheckOutForm({ userId, total }: CheckOutFormProps) {
         className='w-full rounded-md bg-gray-800 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-gray-900 disabled:opacity-50 flex justify-center'
       >
         {isLoading ? (
-           // Feedback visual para que no parezca que "se raya"
            <span className="flex items-center gap-2">
              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
              Procesando...

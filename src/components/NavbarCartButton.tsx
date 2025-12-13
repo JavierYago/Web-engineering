@@ -14,7 +14,6 @@ export default async function NavbarCartButton({
   const session = await getSession()
   let totalQty = 0
 
-  // Solo calculamos si hay sesión. Si no, no hacemos nada (ni redirigimos)
   if (session) {
     const cartData = await getUserCart(session.userId)
     if (cartData) {
@@ -24,9 +23,6 @@ export default async function NavbarCartButton({
       )
     }
   }
-
-  // NOTA: No poner redirect('/auth/signin') aquí, 
-  // porque este componente se carga en el layout global.
 
   return (
     <Link href='/cart' className={`relative ${navbarButtonClasses}`}>

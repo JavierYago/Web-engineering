@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getUserCart } from '@/lib/handlers'
 import { getSession } from '@/lib/auth'
-import CheckOutForm from '@/components/CheckOutForm' // Importar
+import CheckOutForm from '@/components/CheckOutForm'
 
 export default async function Checkout() {
   const session = await getSession()

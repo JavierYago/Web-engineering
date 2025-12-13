@@ -6,8 +6,8 @@ import NavbarButton from '@/components/NavbarButton'
 import Link from 'next/link'
 import { getSession } from '@/lib/auth'
 import ThemeSwitcher from '@/components/ThemeSwitcher'
-import NavbarCartButton from '@/components/NavbarCartButton' // Componente del Badge (Seminario 4)
-import NavbarSignOutButton from '@/components/NavbarSignOutButton' // Componente de Sign Out (Práctica 4)
+import NavbarCartButton from '@/components/NavbarCartButton' 
+import NavbarSignOutButton from '@/components/NavbarSignOutButton' 
 
 export default async function Navbar() {
   const session = await getSession()
